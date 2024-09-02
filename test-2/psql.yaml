@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: default-new
+  name: postgresql
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgresql
+  template:
+    metadata:
+      labels:
+        app: postgresql
+    spec:
+      containers:
+      - name: postgresql
+        image: bitnami/postgresql:latest
+        env:
+        - name: POSTGRESQL_DATABASE
+          value: keycloak
+        - name: POSTGRESQL_USERNAME
+          value: keycloak
+        - name: POSTGRESQL_PASSWORD
+          value: mypassword
+        ports:
+        - containerPort: 5432
+        volumeMounts:
+        - name: postgre-storage
+          mountPath: /bitnami/postgresql
+      volumes:
+      - name: postgre-storage
+        persistentVolumeClaim:
+          claimName: pvc-name
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: default-new
+  labels:
+    app: postgresql
+  name: postgresql
+spec:
+  ports:
+  - port: 5432
+    protocol: TCP
+    targetPort: 5432
+  type: ClusterIP
+  selector:
+    app: postgresql
